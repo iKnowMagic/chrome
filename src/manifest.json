@@ -3,9 +3,9 @@
   "name": "Web Inspiration",
   "description": "Web Inspiration Aggregator",
   "version": "0.1",
-  "icons": {"128": "icon-128.png"},
+  "icons": {"128": "images/icon-128.png"},
   "browser_action": {
-    "default_icon": "icon-16.png",
+    "default_icon": "images/icon-16.png",
     "default_popup": "popup.html"
   },
   "chrome_url_overrides": {
