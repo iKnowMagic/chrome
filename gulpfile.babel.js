@@ -61,28 +61,17 @@ const testLintOptions = {
 gulp.task('lint', lint('app/scripts/**/*.js'));
 gulp.task('lint:test', lint('test/spec/**/*.js', testLintOptions));
 
-gulp.task('nunjucks', () => {
-  return gulp.src(options.src  +'/*.html')
-    .pipe($.plumber())
-    .pipe($.nunjucksRender({
-      path: options.src
-    }))
-    .pipe($.html5Lint())
-    .pipe($.bootlint())
-    .pipe(gulp.dest(options.tmp));
-});
-
-gulp.task('html', ['nunjucks', 'styles', 'scripts'], () => {
-  return gulp.src(options.tmp + '/*.html')
+gulp.task('html', ['styles', 'scripts'], () => {
+  return gulp.src(options.src + '/*.html')
     .pipe($.plumber())
     .pipe($.eol())
     .pipe($.useref({searchPath: [options.tmp, options.src, '.']}))
-    .pipe($.if('*.js', $.uglify()))
-    .pipe($.if('*.css', $.cssnano()))
+    //.pipe($.if('*.js', $.uglify()))
+    //.pipe($.if('*.css', $.cssnano()))
     .pipe($.if('*.js', $.rev()))
     .pipe($.if('*.css', $.rev()))
     .pipe($.revReplace())
-    .pipe($.if('*.html', $.htmlmin({collapseWhitespace: true})))
+    //.pipe($.if('*.html', $.htmlmin({collapseWhitespace: true})))
     .pipe(gulp.dest(options.dest));
 });
 
@@ -121,7 +110,7 @@ gulp.task('extras', () => {
 
 gulp.task('clean', del.bind(null, [options.tmp, options.dest]));
 
-gulp.task('serve', ['nunjucks', 'styles', 'scripts', 'fonts'], () => {
+gulp.task('serve', ['styles', 'scripts', 'fonts'], () => {
   browserSync({
     notify: false,
     port: 9000,
@@ -141,7 +130,7 @@ gulp.task('serve', ['nunjucks', 'styles', 'scripts', 'fonts'], () => {
     options.tmp + '/fonts/**/*'
   ]).on('change', reload);
 
-  gulp.watch(options.src + '/**/*.html', ['nunjucks', reload]);
+  gulp.watch(options.src + '/**/*.html', [reload]);
   gulp.watch(options.src + '/styles/**/*.scss', ['styles']);
   gulp.watch(options.src + '/scripts/**/*.js', ['scripts']);
   gulp.watch(options.src + '/fonts/**/*', ['fonts']);

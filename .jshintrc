@@ -4,6 +4,6 @@
   "esnext": true,
   "indent": 2,
   "jquery": false,
-  "maxlen": 100,
+  "maxlen": 200,
   "node": true
 }

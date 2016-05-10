@@ -3,12 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>Web Inspiration</title>
+
+  <!-- build:css styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild -->
 </head>
 <body>
   <div id="main"></div>
 
+  <script id="main-template" type="text/x-handlebars-template">
+    <div class="container-fluid">
+      <div class="row">
+        {{#entries}}
+        <div class="col-sm-6">
+          {{{content}}}
+        </div>
+        {{/entries}}
+      </div>
+    </div>
+  </script>
+
   <!-- build:js scripts/main.js -->
   <script src="/bower_components/jquery/dist/jquery.js"></script>
+  <script src="/bower_components/masonry/dist/masonry.pkgd.js"></script>
   <script src="scripts/main.js"></script>
   <!-- endbuild -->
 </body>
