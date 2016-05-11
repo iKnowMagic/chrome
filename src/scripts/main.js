@@ -24,8 +24,7 @@ var webInspiration = function ($) {
 		dynamicItems += '<div class="container">';
 
     $.each(json.entries, function (i, val) {
-      console.log(i % 3);
-      if (i % 3 === 0) {
+      if (i % 1 === 0) {
         if (i > 0) {
           dynamicItems += '</div><div class="row">';
         }
@@ -33,7 +32,7 @@ var webInspiration = function ($) {
           dynamicItems += '<div class="row">';
         }
       }
-      dynamicItems += '<div class="col-sm-4"><div class="thumbnail"><a href="' + val.link + '" target="_blank">' +
+      dynamicItems += '<div class="col-sm-12"><div class="thumbnail"><a href="' + val.link + '" target="_blank">' +
        val.content.replace('img src', 'img class="img-responsive" src').replace('<div', '<div').replace(/\<\/div\>.*/, '</div>') +
        '<div class="caption">'+ val.contentSnippet +'</div>' +
       '</a></div></div>';
