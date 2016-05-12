@@ -3,8 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Web Inspiration - Popup Menu</title>
+
+  <!-- build:css styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild -->
 </head>
 <body>
+<div class="container">
+  <div class="btn-group btn-group-vertical popup-buttons">
+    <button class="btn btn-primary active">Full Page Image</button>
+    <button class="btn btn-primary">Two Images Per Row</button>
+    <button class="btn btn-primary">Three Images Per Row</button>
+    <button class="btn btn-primary">Four Images Per Row</button>
+  </div>
+</div>
 
+<!-- build:js scripts/popup.js -->
+<script src="/bower_components/jquery/dist/jquery.js"></script>
+<script src="scripts/popup.js"></script>
+<!-- endbuild -->
 </body>
 </html>

@@ -1,4 +1,4 @@
-var webInspiration = function ($) {
+var webInspiration = function($) {
 
   var options = {
     compiledTemplate: false,
@@ -12,30 +12,64 @@ var webInspiration = function ($) {
       url: 'https://ajax.googleapis.com/ajax/services/feed/load?v=2.0&num=-1&callback=?&q=' + encodeURIComponent(url),
       dataType: 'json',
       success: function success(data) {
-        console.log(data);
+        //console.log(data);
         callback(data.responseData.feed);
       }
     });
   }
 
-  function showArticles(json) {
-    var container = $('#main').html(''),
-        dynamicItems = '';
-		dynamicItems += '<div class="container">';
+  function getNumRows() {
+    return new Promise(function(resolve, reject) {
+      chrome.storage.local.get('numRows', function(result) {
+        if (typeof result.numRows === 'undefined') {
+          chrome.storage.local.set({
+            'numRows': 1
+          });
+          resolve(1);
+        }
+        else {
+          resolve(result.numRows);
+        }
 
-    $.each(json.entries, function (i, val) {
+      });
+    });
+  }
+
+
+  function showArticles(json) {
+    getNumRows().then(function(res) {
+      if (res === 1) {
+        showOneArticle(json);
+      }
+      else {
+
+      }
+    });
+  }
+
+  function showOneArticle(json) {
+    //$.each(json.entries, function(i, val) {
+    //  $('body').css({background: val.})
+    //  return i < 2;
+    //});
+    //return;
+    
+    var container = $('#main').html(''),
+      dynamicItems = '';
+    dynamicItems += '<div class="container">';
+
+    $.each(json.entries, function(i, val) {
       if (i % 1 === 0) {
         if (i > 0) {
           dynamicItems += '</div><div class="row">';
-        }
-        else {
+        } else {
           dynamicItems += '<div class="row">';
         }
       }
       dynamicItems += '<div class="col-sm-12"><div class="thumbnail"><a href="' + val.link + '" target="_blank">' +
-       val.content.replace('img src', 'img class="img-responsive" src').replace('<div', '<div').replace(/\<\/div\>.*/, '</div>') +
-       '<div class="caption">'+ val.contentSnippet +'</div>' +
-      '</a></div></div>';
+        val.content.replace('img src', 'img class="img-responsive" src').replace('<div', '<div').replace(/\<\/div\>.*/, '</div>') +
+        '<div class="caption">' + val.contentSnippet + '</div>' +
+        '</a></div></div>';
       //return i < 4;
     });
 
@@ -43,13 +77,39 @@ var webInspiration = function ($) {
     container.append(dynamicItems);
   }
 
+  /*
+  function showOneArticle(json) {
+    var container = $('#main').html(''),
+      dynamicItems = '';
+    dynamicItems += '<div class="container">';
+
+    $.each(json.entries, function(i, val) {
+      if (i % 1 === 0) {
+        if (i > 0) {
+          dynamicItems += '</div><div class="row">';
+        } else {
+          dynamicItems += '<div class="row">';
+        }
+      }
+      dynamicItems += '<div class="col-sm-12"><div class="thumbnail"><a href="' + val.link + '" target="_blank">' +
+
+        '<div class="caption">' + val.contentSnippet + '</div>' +
+        '</a></div></div>';
+      //return i < 4;
+    });
+
+    dynamicItems += '</div>';
+    container.append(dynamicItems);
+  }
+  */
+
   function parseTemplate(data) {
-    console.log(data);
+    //console.log(data);
     if (options.compiledTemplate) {
       var rendered = Handlebars.templates[options.handlebarsTemplateInternalName](data);
       $(options.mainContainer).html(rendered);
     } else {
-      $.get(options.templateLocation, function (template) {
+      $.get(options.templateLocation, function(template) {
         var compiled = Handlebars.compile(template);
         var rendered = compiled(data);
         $(options.mainContainer).html(rendered);
@@ -58,7 +118,7 @@ var webInspiration = function ($) {
   }
 
   function parseInlineTemplate(data) {
-		console.log(data);
+    //console.log(data);
     var source = $('#main-template').html();
     var template = Handlebars.compile(source);
     var rendered = template(data);
@@ -74,6 +134,6 @@ var webInspiration = function ($) {
   };
 }(jQuery);
 
-jQuery(document).ready(function () {
+jQuery(document).ready(function() {
   webInspiration.main();
 });

@@ -33,8 +33,16 @@ gulp.task('styles', () => {
     .pipe(reload({stream: true}));
 });
 
-gulp.task('scripts', () => {
-  return gulp.src(options.src + '/scripts/**/*.js')
+gulp.task('scripts', (callback) => {
+  runSequence(
+    'scripts1',
+    'background-scripts',
+    callback
+  );
+});
+
+gulp.task('scripts1', () => {
+  return gulp.src([options.src + '/scripts/**/*.js'])
     .pipe($.plumber())
     .pipe($.sourcemaps.init())
     .pipe($.babel())
@@ -42,6 +50,15 @@ gulp.task('scripts', () => {
     .pipe(gulp.dest(options.tmp + '/scripts'))
     .pipe(reload({stream: true}));
 });
+
+gulp.task('background-scripts', () => {
+  return gulp.src([options.src + '/background_scripts/*.js'])
+    .pipe($.plumber())
+    .pipe($.babel())
+    .pipe(gulp.dest(options.tmp + '/background_scripts'))
+    .pipe(reload({stream: true}));
+});
+
 
 function lint(files, options) {
   return () => {
@@ -61,6 +78,20 @@ const testLintOptions = {
 gulp.task('lint', lint('app/scripts/**/*.js'));
 gulp.task('lint:test', lint('test/spec/**/*.js', testLintOptions));
 
+gulp.task('html-pack', ['styles', 'scripts'], () => {
+  return gulp.src(options.src + '/*.html')
+    .pipe($.plumber())
+    .pipe($.eol())
+    .pipe($.useref({searchPath: [options.tmp, options.src, '.']}))
+    .pipe($.if('*.js', $.uglify()))
+    .pipe($.if('*.css', $.cssnano()))
+    .pipe($.if('*.js', $.rev()))
+    .pipe($.if('*.css', $.rev()))
+    .pipe($.revReplace())
+    .pipe($.if('*.html', $.htmlmin({collapseWhitespace: true})))
+    .pipe(gulp.dest(options.dest));
+});
+
 gulp.task('html', ['styles', 'scripts'], () => {
   return gulp.src(options.src + '/*.html')
     .pipe($.plumber())
@@ -68,9 +99,9 @@ gulp.task('html', ['styles', 'scripts'], () => {
     .pipe($.useref({searchPath: [options.tmp, options.src, '.']}))
     //.pipe($.if('*.js', $.uglify()))
     //.pipe($.if('*.css', $.cssnano()))
-    .pipe($.if('*.js', $.rev()))
-    .pipe($.if('*.css', $.rev()))
-    .pipe($.revReplace())
+    //.pipe($.if('*.js', $.rev()))
+    //.pipe($.if('*.css', $.rev()))
+    //.pipe($.revReplace())
     //.pipe($.if('*.html', $.htmlmin({collapseWhitespace: true})))
     .pipe(gulp.dest(options.dest));
 });
@@ -97,15 +128,6 @@ gulp.task('fonts', () => {
     .concat(options.src + '/fonts/**/*'))
     .pipe(gulp.dest(options.tmp + '/fonts'))
     .pipe(gulp.dest(options.dest + '/fonts'));
-});
-
-gulp.task('extras', () => {
-  return gulp.src([
-    options.src + '/*.*',
-    '!'+options.src + '/*.html'
-  ], {
-    dot: true
-  }).pipe(gulp.dest(options.dest));
 });
 
 gulp.task('clean', del.bind(null, [options.tmp, options.dest]));
@@ -201,14 +223,65 @@ gulp.task('deploy', (callback) => {
 gulp.task('pack', (callback) => {
   runSequence(
   'clean',
-  'build-cmp',
-  'ghPages',
+  'build',
+  //'ghPages',
   callback
   );
 });
 
-gulp.task('build', ['html', 'images', 'fonts', 'extras'], () => {
-  return gulp.src(options.dest + '/**/*').pipe($.size({title: 'build', gzip: true}));
+gulp.task('to-production', (callback) => {
+  runSequence(
+    'to-production1',
+    'to-production2',
+    callback
+  );
+});
+
+gulp.task('to-production1', () => {
+  return gulp.src([
+    options.tmp + '/*.*',
+    '!'+options.tmp + '/*.html',
+    options.src + '/*.json',
+  ], {
+    dot: true
+  })
+  .pipe($.newer(options.dest))
+  .pipe(gulp.dest(options.dest));
+});
+
+gulp.task('to-production2', () => {
+  return gulp.src(options.tmp + '/background_scripts/*.js')
+  //.pipe($.newer(options.dest + '/background_scripts'))
+  .pipe(gulp.dest(options.dest + '/background_scripts'));
+});
+
+gulp.task('watch', ['fonts', 'images', 'html'], () => {
+
+  gulp.watch([
+    options.src + '/scripts/**/*.js',
+    options.src + '/background_scripts/*.js',
+    options.src + '/**/*.html',
+    options.src + '/styles/**/*.scss'
+  ], ['html'], () => {
+    gulp.start('to-production');
+  });
+  gulp.watch(options.src + '/fonts/**/*', ['fonts'], () => {
+    gulp.start('to-production');
+  });
+  gulp.watch(options.src + '/images/**/*', ['images'], () => {
+    gulp.start('to-production');
+  });
+
+  gulp.watch(options.src + '/manifest.json', ['to-production']);
+});
+
+gulp.task('build', ['fonts', 'images'], (callback) => {
+  runSequence(
+  'html-pack',
+  'to-production',
+  callback
+  );
+  //return gulp.src(options.dest + '/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
 gulp.task('default', ['clean'], () => {
